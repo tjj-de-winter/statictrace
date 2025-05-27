@@ -4,7 +4,7 @@ This pipeline assumes cells are barcoded using two rounds of lentivirus based ba
 
 <b>Step 1</b>: Perform QC and process the scRNAseq dataset in scanpy, and export the adata object as an h5ad file
 
-<b>Step 2</b>: Extract all lineage barcodes and corresponding cell barcodes from a FASTQ file, a mismatch of 1 nucleotide in the constant nucleotide part of the lineage barcode is allowed. After extracting the barcode, the constant nucleotides are removed and only random nucleotides are kept, resulting in a 16 basepair lineage barcode. This script generates an output CSV file called <i>.linBCs.csv</i>
+<b>Step 2</b>: Extract all lineage barcodes and corresponding cell barcodes from a FASTQ file (first run trimgalore to remove low quality reads and bases), a mismatch of 1 nucleotide in the constant nucleotide part of the lineage barcode is allowed. After extracting the barcode, the constant nucleotides are removed and only random nucleotides are kept, resulting in a 16 basepair lineage barcode. This script generates an output CSV file called <i>.linBCs.csv</i>
 
 ```
 python extract_BCs.v2fast.py --fq1 <fastq R1 file> --fq2 <fastq R1 file> --outdir <output path> --outprefix <output prefix>
