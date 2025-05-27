@@ -32,12 +32,10 @@ df_bc1 = pd.read_csv(clones_BC1, names=['cellbc', 'clonal_family'], index_col=0)
 df_bc2 = pd.read_csv(clones_BC2, names=['cellbc', 'clonal_family'], index_col=0)
 
 def get_clone(cellbc, df_bc):
-	bc_dict = {cellbc: clone for cellbc, clone in zip(df_bc.index, df_bc.clonal_family)}
-
+	bc_dict = {cbc: clone for cbc, clone in zip(df_bc.index, df_bc['clonal_family'])}
 	cellbc = cellbc.strip('-1')
-	if cellbc in bc_dict.values():
+	if cellbc in bc_dict.keys():
 		clone = bc_dict[cellbc]
-		print(clone)
 	else:
 		clone = np.nan
 	return clone
