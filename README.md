@@ -10,7 +10,7 @@ This pipeline assumes cells are barcoded using two rounds of lentivirus based ba
 python extract_BCs.v2fast.py --fq1 <fastq R1 file> --fq2 <fastq R1 file> --outdir <output path> --outprefix <output prefix>
 ```
 
-<b>Step 3</b>: Get all consensus sequences for lineage tracing barcodes extracted in step 2 that are present in the cells that passed QC (step 1), a mismatch of 1 nuleotide in the cell barcode is allowed. Default settings for allowable levensthein distance to compute consensus sequence is set to 3. This script generates four output files (two for BC1 and two for BC2) for each cell barcode.
+<b>Step 3</b>: Get all consensus sequences for lineage tracing barcodes extracted in step 2 that are present in the cells that passed QC (step 1), a mismatch of 1 nucleotide in the cell barcode is allowed. Default settings for allowable levensthein distance to compute consensus sequence is set to 3. This script generates four output files (two for BC1 and two for BC2) for each cell barcode.
 
 ```
 python consensus_linBC.py --CSVdir <path to .linBCs.csv> --h5ad <h5ad file> --distance <levensthein distance> --outdir <output path>
@@ -28,7 +28,7 @@ python linBC_matrix.py --starcode_dir <path to .true_barcodes.txt> --outdir <out
 
 <b>Step 6</b>: Group cells in clonal families by barcode presence using jaccard similarity scoring, cluster the cells using hierarchical clustering. The detault minimum jaccard filtering parameter for clustering is set to 0.5. The minimum clone size is set to 2 cells per clone. This script generates a <i>.clones.csv</i> file
 ```
-python clonal_families --BCmatrix <.linBC_matrix.csv> --outdir <output path>
+python clonal_families.py --BCmatrix <.linBC_matrix.csv> --outdir <output path>
 ```
 
 <b>Step 7</b>: Append clonal information from step 6 to the adata h5ad file generated in step 1
