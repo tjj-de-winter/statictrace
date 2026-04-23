@@ -12,6 +12,7 @@ import pandas as pd
 import gzip
 import numpy as np
 import time
+from itertools import combinations, product
 
 
 ### Input variables ###
@@ -46,16 +47,48 @@ def reverse_complement(sequence):
                   'N':'N'}
     return ''.join([complement[n] for n in sequence[::-1]])
 
-def hamming_distance(BC_seq):
-    '''Generate all possible barcode sequences with 1 hamming distance difference'''
-    nucleotides = ['A', 'C', 'G', 'T']
-    neighbors = [BC_seq]
+# def hamming_distance(BC_seq):
+#     '''Generate all possible barcode sequences with 1 hamming distance difference'''
+#     nucleotides = ['A', 'C', 'G', 'T']
+#     neighbors = [BC_seq]
 
-    for i, n in enumerate(BC_seq):
-        for alt in nucleotides:
-            if alt != n and alt != 'N':
-                neighbor = BC_seq[:i] + alt + BC_seq[i+1:]
-                neighbors.append(neighbor)
+#     for i, n in enumerate(BC_seq):
+#         for alt in nucleotides:
+#             if alt != n and alt != 'N':
+#                 neighbor = BC_seq[:i] + alt + BC_seq[i+1:]
+#                 neighbors.append(neighbor)
+#     return neighbors
+
+from itertools import combinations, product
+
+def hamming_distance(seq, max_dist=2):
+    """
+    Generate all sequences within Hamming distance <= max_dist
+    of the given sequence. 'N' positions are skipped (treated as wildcards).
+    """
+    nucleotides = ['A', 'C', 'G', 'T']
+    neighbors = {seq}  # include original
+
+    L = len(seq)
+
+    # Distance = 1
+    for i in range(L):
+        if seq[i] == 'N':
+            continue
+        for nc in nucleotides:
+            if nc != seq[i]:
+                neighbors.add(seq[:i] + nc + seq[i+1:])
+
+    # Distance = 2
+    if max_dist >= 2:
+        for i, j in combinations(range(L), 2):
+            if seq[i] == 'N' or seq[j] == 'N':
+                continue
+            for nc1, nc2 in product(nucleotides, repeat=2):
+                if nc1 == seq[i] or nc2 == seq[j]:
+                    continue
+                neighbors.add(seq[:i] + nc1 + seq[i+1:j] + nc2 + seq[j+1:])
+
     return neighbors
 
 def detect_barcode(seq):
@@ -98,6 +131,7 @@ patterns_BC1 = [re.compile(bc.replace('N','[ACGT]')) for bc in BC1s]
 BC2s = hamming_distance(BC_2)
 patterns_BC2 = [re.compile(bc.replace('N','[ACGT]')) for bc in BC2s]
 
+print('len BC1s:', len(BC1s), 'len BC2s:', len(BC2s))
 
 # Create output directory if it does not exist
 if not os.path.isdir(outdir):
@@ -109,12 +143,13 @@ n_bc2 = 0
 f1 = gzip.open(fq1)
 f2 = gzip.open(fq2)
 
-outfile = f'{outdir}{outprefix}.linBCs.csv'
+outfile = os.path.join(outdir, f'{outprefix}.linBCs.csv')
 n_reads = 0
 
-os.system(f'rm {outfile}')
+if os.path.exists(outfile):
+    os.remove(outfile)
 
-with open(outfile, 'a') as fout:
+with open(outfile, 'a', buffering=1) as fout:
     fout.write(f'readname,cellBC,cellBC_phred,linBC,linBC_phred,BC_structure\n')
     for idx, (l1, l2) in enumerate(zip(f1.readlines(), f2.readlines())):
         try:
@@ -138,6 +173,7 @@ with open(outfile, 'a') as fout:
                     n_bc1 += 1
                 elif bc_type == 'BC2':
                     n_bc2 += 1
+        fout.flush()
 
 print(time.time()-start)
 
